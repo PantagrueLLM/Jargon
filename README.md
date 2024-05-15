@@ -18,7 +18,7 @@ These models were developed in the context of a research project exploring NLP a
 | jargon-general-legal                                                                |   jargon-general-base   |18GB Legal Corpus
 | [jargon-multidomain-base](https://huggingface.co/PantagrueLLM/jargon-multidomain-base) |   jargon-general-base   |Medical+Legal Corpora|
 | jargon-legal                                                                        |         scratch         |18GB Legal Corpus|
-| jargon-legal-4096                                                                   |         scratch         |18GB Legal Corpus|
+| [jargon-legal-4096](https://huggingface.co/PantagrueLLM/jargon-legal-4096)   |         scratch         |18GB Legal Corpus|
 | [jargon-biomed](https://huggingface.co/PantagrueLLM/jargon-biomed)                    |         scratch         |5.4GB Medical Corpus|
 | [jargon-biomed-4096](https://huggingface.co/PantagrueLLM/jargon-biomed-4096)          |         scratch         |5.4GB Medical Corpus|
 | [jargon-NACHOS](https://huggingface.co/PantagrueLLM/jargon-NACHOS)                    |         scratch         |[NACHOS](https://drbert.univ-avignon.fr/)|
