@@ -1,3 +1,3 @@
-# Jargon
+# Jargon ⚖️ ⚕️
 
-To be released soon
+Coming soon!
