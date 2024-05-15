@@ -12,7 +12,8 @@ For more info please check out our [paper](https://hal.science/hal-04535557/file
 
 These models were developed in the context of a research project exploring NLP application domains with hightly specialized vocabulary and semantic/syntactic patterns, namely medical science and law.
 
-| **Model**  | **Initialised from...** |**Training Data**| |------------------------------------------|:-----------------------:|:----------------:|
+| **Model**  | **Initialised from...** |**Training Data**|
+|------------------------------------------|:-----------------------:|:----------------:|
 | [jargon-general-base](https://huggingface.co/PantagrueLLM/jargon-general-base)        |         scratch         |8.5GB Web Corpus|
 | [jargon-general-biomed](https://huggingface.co/PantagrueLLM/jargon-general-biomed)    |   jargon-general-base   |5.4GB Medical Corpus|
 | jargon-general-legal                                                                |   jargon-general-base   |18GB Legal Corpus
