@@ -170,3 +170,8 @@ f2_code_cp
 
 # access token
 pat.txt
+
+# model eval test runs
+evaluation/biomed/clister-results
+evaluation/biomed/results
+evaluation/biomed/frenchmedmcqa/results

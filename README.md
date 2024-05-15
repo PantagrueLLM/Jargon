@@ -7,12 +7,12 @@ Jargon is available in several versions with different context sizes and types o
 For more info please check out our [paper](https://hal.science/hal-04535557/file/FB2_domaines_specialises_LREC_COLING24.pdf), accepted for publication at [LREC-COLING 2024](https://lrec-coling-2024.org/list-of-accepted-papers/).
 
 
+
 ### Pre-trained models
 
 These models were developed in the context of a research project exploring NLP application domains with hightly specialized vocabulary and semantic/syntactic patterns, namely medical science and law.
 
-| **Model**                                                                           | **Initialised from...** |**Training Data**|
-|-------------------------------------------------------------------------------------|:-----------------------:|:----------------:|
+| **Model**  | **Initialised from...** |**Training Data**| |------------------------------------------|:-----------------------:|:----------------:|
 | [jargon-general-base](https://huggingface.co/PantagrueLLM/jargon-general-base)        |         scratch         |8.5GB Web Corpus|
 | [jargon-general-biomed](https://huggingface.co/PantagrueLLM/jargon-general-biomed)    |   jargon-general-base   |5.4GB Medical Corpus|
 | jargon-general-legal                                                                |   jargon-general-base   |18GB Legal Corpus
@@ -27,13 +27,14 @@ These models were developed in the context of a research project exploring NLP a
 
 ### Using pre-trained Jargon models with 🤗 transformers
 
-You can get started with any of the above using the code snippet below:
+You can get started with any of the above models using the code snippet below:
 
 ```python
 from transformers import AutoModelForMaskedLM, AutoTokenizer, pipeline
 
-tokenizer = AutoTokenizer.from_pretrained("PantagrueLLM/jargon-general-base", trust_remote_code=True)
-model = AutoModelForMaskedLM.from_pretrained("PantagrueLLM/jargon-general-base", trust_remote_code=True)
+hf_model_path = "PantagrueLLM/jargon-general-base"
+tokenizer = AutoTokenizer.from_pretrained(hf_model_path, trust_remote_code=True)
+model = AutoModelForMaskedLM.from_pretrained(hf_model_path, trust_remote_code=True)
 
 jargon_maskfiller = pipeline("fill-mask", model=model, tokenizer=tokenizer)
 output = jargon_maskfiller("Il est allé au <mask> hier")
@@ -64,12 +65,18 @@ output = jargon_maskfiller("Il va aller au <mask> demain")
 **Note:** The `fairseq` codebase is, as of the time of writing, not compatible with Python 3.11+ (see this [issue](https://github.com/facebookresearch/fairseq/issues/5012) for more details and potential fixes).
 
 
+### Benchmark evaluation
+
+Evaluation scripts for the fine-tuning benchmarks described in the paper are provided in the `evaluation` directory.
+Simply install the requirements and run any script with the `-h` flag for details on how to execute the tasks.
+
+
 ## Citation
 
 If you use the Jargon models and/or code for your own research work, please cite as follows:
 
 ```bibtex
-@inproceedings{segonne:hal-04535557,
+@inproceedings{segonne_:hal-04535557_,
   TITLE = {{Jargon: A Suite of Language Models and Evaluation Tasks for French Specialized Domains}},
   AUTHOR = {Segonne, Vincent and Mannion, Aidan and Alonzo Canul, Laura Cristina and Audibert, Alexandre and Liu, Xingyu and Macaire, C{\'e}cile and Pupier, Adrien and Zhou, Yongxin and Aguiar, Mathilde and Herron, Felix and Norr{\'e}, Magali and Amini, Massih-Reza and Bouillon, Pierrette and Eshkol-Taravella, Iris and Esperan{\c c}a-Rodier, Emmanuelle and Fran{\c c}ois, Thomas and Goeuriot, Lorraine and Goulian, J{\'e}r{\^o}me and Lafourcade, Mathieu and Lecouteux, Benjamin and Portet, Fran{\c c}ois and Ringeval, Fabien and Vandeghinste, Vincent and Coavoux, Maximin and Dinarelli, Marco and Schwab, Didier},
   URL = {https://hal.science/hal-04535557},
