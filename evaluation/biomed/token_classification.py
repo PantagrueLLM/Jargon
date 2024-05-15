@@ -26,6 +26,8 @@ from transformers import (
 )
 from datasets import load_dataset
 
+from finetuning_cl_args_common import add_common_training_arguments
+
 
 logger = logging.getLogger(__name__)
 LOGFMT = "%(asctime)s - %(levelname)s - \t%(message)s"
@@ -37,21 +39,9 @@ test.json files, or a valid argument to pass to datasets.load_dataset, in the ca
 where the hfload option is activated."""
 MODEL_HELP = """Path to a pre-trained PyTorch BERT-style model compatible with the
 transformers token classification model."""
-LABEL_NAME_HELP = """The target class variable name in the dataset specified by data_fp
+LABEL_NAME_HELP = """The target class variable name in the dataset specified by data_path
 """
 TEXT_NAME_HELP = """The name of the text component in the input data file"""
-SEQ_LEN_HELP = """Maximum number of tokens per sequence"""
-BATCH_SIZE_HELP = """Number of sequences to process at a time"""
-EPOCHS_HELP = """Number of passes to run over the training & validation sets"""
-STEPS_HELP = """Number of training updates to carry out; overwrites epochs"""
-RUNS_HELP = """Number of total runs to carry out, varying the random seed each time"""
-GRAD_ACC_HELP = """Number of training set batches over which to add up the gradient
-between each backward pass"""
-LR_HELP = """Learning rate to pass to the optimiser"""
-WARMUP_HELP = """Number of learning rate warmup steps"""
-WEIGHT_DECAY_HELP = """Decoupled weight decay value to apply in the Adam optimiser"""
-SAVE_HELP = """Value to pass to the `save_strategy` parameter of the transformers
-TrainingArguments object (https://huggingface.co/docs/transformers/main/en/main_classes/trainer#transformers.TrainingArguments)"""
 OUTPUT_DIR_HELP = """Where to put the output directory"""
 SEED_HELP = """Sets the base random state for the script, including the generation
 of seeds for multiple runs"""
@@ -107,35 +97,22 @@ class BatchEncodingDataset(Dataset):
 
 
 def parse_arguments():
-    parser = ArgumentParser()
-    parser.add_argument("data_fp", type=str, help=DATA_FP_HELP)
-    parser.add_argument("model", type=str, help=MODEL_HELP)
+    parser = add_common_training_arguments(ArgumentParser())
+    parser.add_argument("--data_path", type=str, help=DATA_FP_HELP)
     parser.add_argument("--label_name", type=str, default="tags", help=LABEL_NAME_HELP)
     parser.add_argument("--text_name", type=str, default="text", help=TEXT_NAME_HELP)
-    parser.add_argument("--seq_len", type=int, default=512, help=SEQ_LEN_HELP)
     parser.add_argument("--word2token_overflow", type=int, default=50)
-    parser.add_argument("--batch_size", type=int, default=16, help=BATCH_SIZE_HELP)
     parser.add_argument("--eval_batch_size", type=int)
-    parser.add_argument("--epochs", type=int, default=4, help=EPOCHS_HELP)
-    parser.add_argument("--steps", type=int, default=-1, help=STEPS_HELP)
-    parser.add_argument("--runs", type=int, default=1, help=RUNS_HELP)
-    parser.add_argument("--grad_acc", type=int, default=1, help=GRAD_ACC_HELP)
-    parser.add_argument("--eval_acc", type=int)
-    parser.add_argument("--lr", type=float, default=2e-5, help=LR_HELP)
-    parser.add_argument("--warmup", type=int)
-    parser.add_argument("--weight_decay", type=float, default=.01, help=WEIGHT_DECAY_HELP)
-    parser.add_argument("--save", type=str, choices={"no", "epoch", "steps"}, default="steps")
     default_output_dir = os.path.join(os.getenv("HOME"), "token-clf-eval")
     parser.add_argument("--output_dir", type=str, default=default_output_dir, help=OUTPUT_DIR_HELP)
     parser.add_argument("--seed", type=int, default=42, help=SEED_HELP)
     parser.add_argument("--subset_name", type=str)
     parser.add_argument("--eval_split_name", type=str, default="validation",
         help=EVAL_SPLIT_NAME_HELP)
-    # parser.add_argument("--label_value_list", type=str)
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--no_eval", action="store_true", help=NOEVAL_HELP)
     parser.add_argument("--skip_test", action="store_true", help=SKIP_TEST_HELP)
-    parser.add_argument("--trust_remote_code", action="store_true", help=SKIP_TEST_HELP)
+    parser.add_argument("--trust_remote_code", action="store_true", help=TRC_HELP)
     parser.add_argument("--hfload", action="store_true", help=HFLOAD_HELP)
     parser.add_argument("--bio", action="store_true", help=BIO_HELP)
     parser.add_argument("--add_none", action="store_true", help=ADD_NONE_HELP)
@@ -252,7 +229,6 @@ def tokenize_and_align(text, labels, tokenizer, label2id, split_into_words):
                 for del_key in ("overflowing_tokens", "num_truncated_tokens", "token_type_ids"):
                     del input_encoding[del_key]
         n_sequences = len(input_encoding["input_ids"])
-        # assert len(text_idx) == n_sequences, f"tidx={len(text_idx)}, n={n_sequences}"
         original_idx = -1
         for i in range(n_sequences):
             if text_idx:
@@ -293,10 +269,10 @@ def tokenize_and_align(text, labels, tokenizer, label2id, split_into_words):
 
 
 def main(args):
-    logger.info("Loading dataset from %s", args.data_fp)
+    logger.info("Loading dataset from %s", args.data_path)
     if args.hfload:
-        train_data = load_dataset(args.data_fp, split="train", name=args.subset_name)
-        dev_data = load_dataset(args.data_fp, split=args.eval_split_name, name=args.subset_name) \
+        train_data = load_dataset(args.data_path, split="train", name=args.subset_name)
+        dev_data = load_dataset(args.data_path, split=args.eval_split_name, name=args.subset_name) \
             if not args.no_eval else None
         train_text, train_labels = train_data[args.text_name], train_data[args.label_name]
         if not args.no_eval:
@@ -306,7 +282,7 @@ def main(args):
     else:
         train_data, dev_data = map(
             lambda x: load_ner_data(
-                os.path.join(args.data_fp, x + ".json"),
+                os.path.join(args.data_path, x + ".json"),
                 label_name=args.label_name, text_name=args.text_name
             ), ("train", "dev")
         )
@@ -416,7 +392,7 @@ def main(args):
         _, output_name_model = os.path.split(args.model)
     else:
         output_name_model = args.model
-    _, output_name_data = os.path.split(args.data_fp if args.data_fp[-1] != "/" else args.data_fp[:-1])
+    _, output_name_data = os.path.split(args.data_path if args.data_path[-1] != "/" else args.data_path[:-1])
     if args.subset_name:
         output_name_data += "_" + args.subset_name
     now = datetime.now()
@@ -469,11 +445,11 @@ def main(args):
         if not args.skip_test:
             logger.info("Loading & encoding test dataset...")
             if args.hfload:
-                test_data = load_dataset(args.data_fp, split="test", name=args.subset_name)
+                test_data = load_dataset(args.data_path, split="test", name=args.subset_name)
                 test_text, test_labels = test_data[args.text_name], test_data[args.label_name]
             else:
                 test_text, test_labels = load_ner_data(
-                    os.path.join(args.data_fp, "test.json"),
+                    os.path.join(args.data_path, "test.json"),
                     args.label_name, args.text_name
                 )
             test_encoding = tokenize_and_align(
