@@ -69,7 +69,6 @@ output = jargon_maskfiller("Il va aller au <mask> demain")
 ### Benchmark evaluation
 
 Evaluation scripts for the fine-tuning benchmarks described in the paper are provided in the `evaluation` directory.
-Simply install the requirements and run any script with the `-h` flag for details on how to execute the tasks.
 
 
 ## Citation

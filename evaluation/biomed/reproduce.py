@@ -2,7 +2,7 @@ import os
 import sys
 import json
 from importlib import import_module
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 
 TASKS = [
     "fmcqa",
@@ -43,8 +43,7 @@ HERE = os.path.dirname(__file__)
 def parse_arguments():
     parser = ArgumentParser()
     parser.add_argument("task", type=str, choices=TASKS)
-    parser.add_argument("params", type=str)
-    parser.add_argument("--model", type=str, choices=MODELS)
+    parser.add_argument("model", type=str, choices=MODELS)
     return parser.parse_args()
 
 
@@ -56,12 +55,15 @@ def main(args):
         script = "clister"
     else:
         script = "token_classification"
-    experiment_func = import_module(script).main
-    with open(args.params) as f:
-        args = Namespace(**json.load(f))
-    experiment_func(args)
+    xpmodule = import_module(script)
+    xpfunc = xpmodule.main
+    xpargparser = xpmodule.parse_arguments
+    with open(os.path.join(HERE, "experiment_params", args.task + ".json")) as f:
+        xpargs = json.load(f)
+    args = xpargparser()  # defaults
+    args.__dict__.update(xpargs)
+    xpfunc(args)
 
 
 if __name__ == "__main__":
     main(parse_arguments())
-    

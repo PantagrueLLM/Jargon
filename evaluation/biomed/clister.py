@@ -83,9 +83,7 @@ def main(args):
         warmup_steps=args.warmup,
         optimizer_params=optimizer_params,
         weight_decay=args.weight_decay,
-        # output_path=output_path,
         show_progress_bar=not args.no_tqdm,
-        # safe_serialization=False
     )
     logger.info("Running evaluation on test set...")
     test_dataset = pd.read_csv(os.path.join(args.data_path, "clister_test.tsv"), sep="\t")
