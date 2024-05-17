@@ -98,9 +98,12 @@ def main(args):
     logger.info("Spearman correlation for test data: %.5f @ p=%.9f", result.statistic, result.pvalue)
     if output_path:
         with open(os.path.join(output_path, "cl_args.json"), "w") as f:
-            json.dump(vars(args), f)
+            json.dump(vars(args), f, indent=4)
         with open(os.path.join(output_path, "results.json"), "w") as f:
-            json.dump({attr: getattr(result, attr) for attr in ("statistic", "pvalue")}, f)
+            json.dump(
+                {attr: getattr(result, attr) for attr in ("statistic", "pvalue")},
+                f, indent=4
+            )
 
 
 if __name__ == "__main__":
