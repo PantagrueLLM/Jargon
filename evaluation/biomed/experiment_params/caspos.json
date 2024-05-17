@@ -1,0 +1,11 @@
+{
+    "data_fp": null,
+    "label_name": "pos_tag",
+    "seq_len": 150,
+    "batch_size": 16,
+    "steps": 2000,
+    "runs": 5,
+    "grad_acc": 1,
+    "lr": 2e-05,
+    "seed": 42
+}

@@ -1,0 +1,12 @@
+{
+    "data_fp": null,
+    "label_name": "tags",
+    "text_name": "text",
+    "batch_size": 8,
+    "steps": 2000,
+    "runs": 5,
+    "grad_acc": 2,
+    "lr": 2e-05,
+    "save": "steps",
+    "seed": 42
+}

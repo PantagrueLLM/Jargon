@@ -1,0 +1,14 @@
+{
+    "data_fp": "meczifho/QuaeroFrenchMed",
+    "subset_name": "EMEA",
+    "label_name": "ner_tags",
+    "text_name": "words",
+    "eval_split_name": "validation",
+    "seq_len": 512,
+    "batch_size": 8,
+    "steps": 2000,
+    "runs": 5,
+    "grad_acc": 2,
+    "seed": 42,
+    "hfload": true
+}
