@@ -35,7 +35,7 @@ command prompt asking for confirmation"""
 
 def parse_arguments():
     parser = add_common_training_arguments(ArgumentParser())
-    parser.add_argument("--data_path", type=str)
+    parser.add_argument("--data_path", type=str, help=DATAPATH_HELP)
     parser.add_argument("--output_dir", type=str, help=OUTPUT_DIR_HELP)
     parser.add_argument("--no_tqdm", action="store_true")
     parser.add_argument("--seed", type=int, default=42, help=SEED_HELP)
@@ -71,8 +71,10 @@ def main(args):
         _, model_name = os.path.split(args.model)
     else:
         model_name = args.model
-    output_subdir = f"{model_name}_{now.day}-{now.month}_{now.hour}-{now.minute}"
-    output_path = os.path.join(args.output_dir, output_subdir)
+    if args.save != "no":
+        output_subdir = f"{model_name}_{now.day}-{now.month}_{now.hour}-{now.minute}"
+        output_path = os.path.join(args.output_dir, output_subdir)
+        os.mkdir(output_path)
     manual_seed(args.seed)
     train_dataset = list(InputExample(texts=[t.id_1, t.id_2], label=(t.sim / 5)) for t in train_df.itertuples())
     dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
@@ -96,11 +98,14 @@ def main(args):
     )
     result = spearmanr(test_dataset.sim, cosine_similarities)
     logger.info("Spearman correlation for test data: %.5f @ p=%.9f", result.statistic, result.pvalue)
-    if output_path:
+    if args.save != "no":
         with open(os.path.join(output_path, "cl_args.json"), "w") as f:
-            json.dump(vars(args), f)
+            json.dump(vars(args), f, indent=4)
         with open(os.path.join(output_path, "results.json"), "w") as f:
-            json.dump({attr: getattr(result, attr) for attr in ("statistic", "pvalue")}, f)
+            json.dump({
+                attr: getattr(result, attr) for attr in ("statistic", "pvalue")
+            }, f, indent=4)
+        logger.info("Done: output @ %s", output_path)
 
 
 if __name__ == "__main__":
