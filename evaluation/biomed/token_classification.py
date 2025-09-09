@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+from pathlib import Path
 from argparse import ArgumentParser
 from warnings import filterwarnings
 from functools import partial
@@ -43,6 +44,8 @@ LABEL_NAME_HELP = """The target class variable name in the dataset specified by 
 """
 TEXT_NAME_HELP = """The name of the text component in the input data file"""
 OUTPUT_DIR_HELP = """Where to put the output directory"""
+DATA_OUT_NAME_HELP = """A name to use for the dataset in the output directory; by default,
+the last name in the file path `data_path` will be used"""
 SEED_HELP = """Sets the base random state for the script, including the generation
 of seeds for multiple runs"""
 EVAL_SPLIT_NAME_HELP = """The name of the evaluation split in the input dataset
@@ -105,11 +108,13 @@ def parse_arguments():
     parser.add_argument("--eval_batch_size", type=int)
     default_output_dir = os.path.join(os.getenv("HOME"), "token-clf-eval")
     parser.add_argument("--output_dir", type=str, default=default_output_dir, help=OUTPUT_DIR_HELP)
+    parser.add_argument("--dataset_output_name", type=str)
     parser.add_argument("--seed", type=int, default=42, help=SEED_HELP)
     parser.add_argument("--subset_name", type=str)
     parser.add_argument("--eval_split_name", type=str, default="validation",
         help=EVAL_SPLIT_NAME_HELP)
     parser.add_argument("--gpu", type=int, default=0)
+    parser.add_argument("--set_model_pad_token_id", action="store_true", help=NOEVAL_HELP)
     parser.add_argument("--no_eval", action="store_true", help=NOEVAL_HELP)
     parser.add_argument("--skip_test", action="store_true", help=SKIP_TEST_HELP)
     parser.add_argument("--trust_remote_code", action="store_true", help=TRC_HELP)
@@ -271,9 +276,18 @@ def tokenize_and_align(text, labels, tokenizer, label2id, split_into_words):
 def main(args):
     logger.info("Loading dataset from %s", args.data_path)
     if args.hfload:
-        train_data = load_dataset(args.data_path, split="train", name=args.subset_name)
-        dev_data = load_dataset(args.data_path, split=args.eval_split_name, name=args.subset_name) \
-            if not args.no_eval else None
+        train_data = load_dataset(
+            args.data_path,
+            split="train",
+            name=args.subset_name,
+            trust_remote_code=args.trust_remote_code
+        )
+        dev_data = load_dataset(
+            args.data_path,
+            split=args.eval_split_name,
+            name=args.subset_name,
+            trust_remote_code=args.trust_remote_code
+        ) if not args.no_eval else None
         train_text, train_labels = train_data[args.text_name], train_data[args.label_name]
         if not args.no_eval:
             dev_text, dev_labels = dev_data[args.text_name], dev_data[args.label_name]
@@ -327,11 +341,13 @@ def main(args):
         logger.info("Model setup")
     if args.auth is not None:
         hub_kwargs = {"use_auth_token": args.auth, "trust_remote_code": True}
-        model_init_kwargs.update(hub_kwargs)
     else:
         hub_kwargs = {"trust_remote_code": args.trust_remote_code}
-    model = AutoModelForTokenClassification.from_pretrained(args.model, **model_init_kwargs)
+    model_init_kwargs.update(hub_kwargs)
     tokenizer = AutoTokenizer.from_pretrained(args.model, **hub_kwargs)
+    if args.set_model_pad_token_id:
+        model_init_kwargs["pad_token_id"] = tokenizer.pad_token_id
+    model = AutoModelForTokenClassification.from_pretrained(args.model, **model_init_kwargs)
     optimizer = AdamW(tuple(model.parameters()), lr=args.lr)
     scheduler = get_constant_schedule_with_warmup(optimizer, args.warmup) \
         if args.warmup else get_constant_schedule(optimizer)
@@ -387,16 +403,15 @@ def main(args):
                 for name, val in zip(METRICS, metric_values):
                     per_sequence_metrics[average + name].append(val)
         return {k: sum(v) / len(v) for k, v in per_sequence_metrics.items()}
-
-    if "/" in args.model:
-        _, output_name_model = os.path.split(args.model)
-    else:
-        output_name_model = args.model
-    _, output_name_data = os.path.split(args.data_path if args.data_path[-1] != "/" else args.data_path[:-1])
+    
+    output_name_model = Path(args.model).name
+    dataset_output_name = args.dataset_output_name if args.dataset_output_name \
+        else Path(args.data_path).name
+    # _, dataset_output_name = os.path.split(args.data_path if args.data_path[-1] != "/" else args.data_path[:-1])
     if args.subset_name:
-        output_name_data += "_" + args.subset_name
+        dataset_output_name += "_" + args.subset_name
     now = datetime.now()
-    output_subdir = f"{output_name_model}_{output_name_data}_{now.day}-{now.month}_{now.hour}-{now.minute}"
+    output_subdir = f"{output_name_model}_{dataset_output_name}_{now.day}-{now.month}_{now.hour}-{now.minute}"
     if not os.path.isdir(args.output_dir) and args.save != "no":
         os.mkdir(args.output_dir)
     output_dir = os.path.join(args.output_dir, output_subdir)
@@ -445,7 +460,12 @@ def main(args):
         if not args.skip_test:
             logger.info("Loading & encoding test dataset...")
             if args.hfload:
-                test_data = load_dataset(args.data_path, split="test", name=args.subset_name)
+                test_data = load_dataset(
+                    args.data_path,
+                    split="test",
+                    name=args.subset_name,
+                    trust_remote_code=args.trust_remote_code
+                )
                 test_text, test_labels = test_data[args.text_name], test_data[args.label_name]
             else:
                 test_text, test_labels = load_ner_data(
