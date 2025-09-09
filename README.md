@@ -69,7 +69,6 @@ output = jargon_maskfiller("Il va aller au <mask> demain")
 ### Benchmark evaluation
 
 Evaluation scripts for the fine-tuning benchmarks described in the paper are provided in the `evaluation` directory.
-Simply install the requirements and run any script with the `-h` flag for details on how to execute the tasks.
 
 
 ## Citation
@@ -77,7 +76,7 @@ Simply install the requirements and run any script with the `-h` flag for detail
 If you use the Jargon models and/or code for your own research work, please cite as follows:
 
 ```bibtex
-@inproceedings{segonne_:hal-04535557_,
+@inproceedings{segonne:hal-04535557,
   TITLE = {{Jargon: A Suite of Language Models and Evaluation Tasks for French Specialized Domains}},
   AUTHOR = {Segonne, Vincent and Mannion, Aidan and Alonzo Canul, Laura Cristina and Audibert, Alexandre and Liu, Xingyu and Macaire, C{\'e}cile and Pupier, Adrien and Zhou, Yongxin and Aguiar, Mathilde and Herron, Felix and Norr{\'e}, Magali and Amini, Massih-Reza and Bouillon, Pierrette and Eshkol-Taravella, Iris and Esperan{\c c}a-Rodier, Emmanuelle and Fran{\c c}ois, Thomas and Goeuriot, Lorraine and Goulian, J{\'e}r{\^o}me and Lafourcade, Mathieu and Lecouteux, Benjamin and Portet, Fran{\c c}ois and Ringeval, Fabien and Vandeghinste, Vincent and Coavoux, Maximin and Dinarelli, Marco and Schwab, Didier},
   URL = {https://hal.science/hal-04535557},

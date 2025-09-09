@@ -34,7 +34,8 @@ LOGFMT = "%(asctime)s - %(levelname)s - \t%(message)s"
 logging.basicConfig(format=LOGFMT, datefmt="%d/%m/%Y %H:%M:%S", level=logging.INFO)
 simplefilter(action="ignore", category=UndefinedMetricWarning)
 
-
+DATALOADER_HELP = """Dataset loader script defining the `FrenchMedMCQA` dataset
+builder object, allowing for compatibility with the `datasets` library"""
 OUTPUT_DIR_HELP = """Where to put the output directory"""
 SEED_HELP = """Sets the base random state for the script, including the generation
 of seeds for multiple runs"""
@@ -86,8 +87,6 @@ def main(args):
     eval_data = dataset.get("validation")
     
     logger.info("Model setup: %s", args.model)
-    # trust_remote_code = args.model.startswith("TCMVince")
-    # auth_token = "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" if trust_remote_code else None
     tokenizer = AutoTokenizer.from_pretrained(
         args.model, trust_remote_code=args.trust_remote_code, use_auth_token=args.auth
     )

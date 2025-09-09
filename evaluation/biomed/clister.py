@@ -85,9 +85,7 @@ def main(args):
         warmup_steps=args.warmup,
         optimizer_params=optimizer_params,
         weight_decay=args.weight_decay,
-        # output_path=output_path,
         show_progress_bar=not args.no_tqdm,
-        # safe_serialization=False
     )
     logger.info("Running evaluation on test set...")
     test_dataset = pd.read_csv(os.path.join(args.data_path, "clister_test.tsv"), sep="\t")
@@ -100,8 +98,12 @@ def main(args):
     logger.info("Spearman correlation for test data: %.5f @ p=%.9f", result.statistic, result.pvalue)
     if args.save != "no":
         with open(os.path.join(output_path, "cl_args.json"), "w") as f:
-            json.dump(vars(args), f, indent=4)
+            json.dump(vars(args), f)
         with open(os.path.join(output_path, "results.json"), "w") as f:
+            json.dump(
+                {attr: getattr(result, attr) for attr in ("statistic", "pvalue")},
+                f, indent=4
+            )
             json.dump({
                 attr: getattr(result, attr) for attr in ("statistic", "pvalue")
             }, f, indent=4)

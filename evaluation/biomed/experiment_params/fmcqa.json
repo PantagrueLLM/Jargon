@@ -1,0 +1,9 @@
+{
+    "seq_len": 512,
+    "batch_size": 8,
+    "epochs": 10,
+    "runs": 5,
+    "grad_acc": 4,
+    "lr": 2e-05,
+    "warmup": null
+}

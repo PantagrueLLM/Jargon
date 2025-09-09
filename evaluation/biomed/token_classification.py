@@ -419,7 +419,7 @@ def main(args):
         rmtree(output_dir)
     os.mkdir(output_dir)
     with open(os.path.join(output_dir, "cl_args.json"), "w") as f:
-        json.dump(vars(args), f)
+        json.dump(vars(args), f, indent=4)
     per_run_results = defaultdict(list)
     rng = np.random.default_rng(seed=args.seed)
     seeds = rng.integers(0, np.iinfo(np.int16).max, size=args.runs, dtype=np.int16)
@@ -480,7 +480,7 @@ def main(args):
             test_dataset = BatchEncodingDataset(test_encoding)
             test_results = trainer.evaluate(test_dataset)
             with open(os.path.join(run_output_dir, "results.json"), "w") as f:
-                json.dump(test_results, f)
+                json.dump(test_results, f, indent=4)
             for k, v in test_results.items():
                 metric_name = k.replace("eval_", "")
                 if metric_name in metric_names:
@@ -499,7 +499,7 @@ def main(args):
         )
     if args.save != "no":
         with open(os.path.join(output_dir, "results.json"), "w") as f:
-            json.dump(averaged_results, f)
+            json.dump(averaged_results, f, indent=4)
         with open(os.path.join(output_dir, "run_seeds.txt"), "w") as f:
             f.write("\n".join(seeds.astype(str).tolist()))
         logger.info("Done! Files in %s", output_dir)
